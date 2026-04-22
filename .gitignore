@@ -1,0 +1,17 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente
+.env
+*.env.local
+
+# Banco de dados SQLite
+*.db
+*.db-journal
+
+# Claude Code
+.claude/
+
+# Sistema
+.DS_Store
+Thumbs.db
