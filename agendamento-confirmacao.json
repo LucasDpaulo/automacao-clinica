@@ -1,0 +1,974 @@
+{
+  "name": "Clínica",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "48f114b5-4ad1-4f3c-ae07-5fadd8a45240",
+      "name": "Webhook",
+      "webhookId": "215eda43-d0a5-41cb-a252-50fbe4274822"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da8b244c-9195-437d-8893-3b2ce25b9e11",
+              "name": "mensagem",
+              "value": "={{ $json.body.payload.body }}",
+              "type": "string"
+            },
+            {
+              "id": "69b59441-155f-49f0-bddb-4769af67fb60",
+              "name": "telefone",
+              "value": "={{ $json.body.payload.from }}",
+              "type": "string"
+            },
+            {
+              "id": "e0f68b8c-2cbf-4897-8d8d-6f86a0c0029f",
+              "name": "nome",
+              "value": "={{ $json.body.pushName || \"Cliente\" }}",
+              "type": "string"
+            },
+            {
+              "id": "be7ad496-a722-4197-88f7-d1044a6a97c2",
+              "name": "session",
+              "value": "={{$json.body.session}}",
+              "type": "string"
+            },
+            {
+              "id": "de5401e5-5457-4071-9d87-d237bd54cf02",
+              "name": "chatId",
+              "value": "={{$json.body.payload.from}}",
+              "type": "string"
+            },
+            {
+              "id": "31364d7e-c112-4e75-a4cf-230bf758977c",
+              "name": "messageId",
+              "value": "={{$json.body.payload.id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "422259ee-7c29-4a03-9ada-7da9bba65252",
+      "name": "Dados"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0f263eea-efe1-4ca1-9781-6a7bf99212f3",
+              "leftValue": "={{ $json.source }}",
+              "rightValue": "api",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "94519085-f777-433f-bb2f-e780eab74caa",
+      "name": "api?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0efa6560-033c-4262-9435-701f8d844b8c",
+              "leftValue": "={{ $json.to }}",
+              "rightValue": "@g.us",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        640,
+        16
+      ],
+      "id": "2c928034-a5ac-4cd2-b0e5-ab5b25c17633",
+      "name": "grupos"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.mensagem}}",
+        "options": {
+          "systemMessage": "=Você é a assistente virtual de uma clínica odontológica e conversa com pacientes pelo WhatsApp em português do Brasil.\n\nSeu objetivo é atender de forma humana, simples, acolhedora e prática.\n\nFunções:\n- Informar horários disponíveis\n- Agendar consultas\n- Cancelar consultas\n- Reagendar consultas\n- Informar especialidades e dentistas\n- Sugerir a especialidade mais adequada com base no sintoma do paciente\n\nRegras obrigatórias:\n- Sempre use as ferramentas quando precisar de dados reais\n- Nunca invente horários, médicos, especialidades ou agendamentos\n- Nunca mencione ferramentas, funções, banco de dados, SQL ou detalhes técnicos\n- Nunca escreva tags como <function=...>\n- Nunca escreva o nome interno das ferramentas\n- Responda sempre como uma atendente humana da clínica\n- Use linguagem natural, simples e educada\n- Evite linguagem robótica\n- Seja breve, clara e gentil\n\nEstilo de resposta:\n- Fale como atendimento de clínica no WhatsApp\n- Use frases naturais como:\n  - \"Claro, vou te ajudar com isso.\"\n  - \"Temos estes horários disponíveis:\"\n  - \"Se quiser, posso fazer seu agendamento.\"\n  - \"Posso confirmar esse horário para você?\"\n- Não use linguagem técnica\n- Não use a palavra “id” com o paciente\n- Quando listar horários, transforme os resultados em:\n  - Opção 1\n  - Opção 2\n  - Opção 3\n- Nunca mostre o id_horario interno ao paciente\n\nMapeamento dos sintomas:\n- Dor de dente -> Clínico Geral\n- Dor na gengiva -> Periodontista\n- Canal -> Endodontista\n- Aparelho -> Ortodontista\n- Implante -> Implantodontista\n\nRegras de comportamento:\n- Se o paciente disser um sintoma, sugira a especialidade mais adequada e pergunte se ele quer ver os horários\n- Se o paciente pedir horários, consulte os horários reais\n- Ao mostrar horários, apresente em linguagem humana e com numeração simples:\n  - Opção 1: dia X às Y com Dr(a). Z\n  - Opção 2: dia X às Y com Dr(a). Z\n- Se o paciente disser “quero a opção 1”, “quero a primeira”, “pode ser a 2”, entenda isso como escolha da posição da lista mostrada anteriormente\n- Ao confirmar agendamento, use internamente o id_horario correspondente à opção escolhida, mas nunca mostre esse id ao paciente\n- Antes de agendar, cancelar ou reagendar, sempre confirme com o paciente\n- Se o paciente confirmar cancelamento, execute o cancelamento sem mostrar detalhes técnicos\n- Se o paciente confirmar reagendamento, execute o reagendamento sem mostrar detalhes técnicos\n\nExemplos de linguagem correta:\n- \"Encontrei estes horários disponíveis para Clínico Geral:\"\n- \"Opção 1: 22/04 às 10:00 com Dr. João Silva\"\n- \"Opção 2: 23/04 às 14:00 com Dra. Ana Costa\"\n- \"Qual dessas opções você prefere?\"\n- \"Perfeito, posso seguir com a opção 1. Deseja que eu confirme esse agendamento?\"\n- \"Seu agendamento foi confirmado com sucesso.\"\n\nExemplos do que NÃO fazer:\n- Não escrever \"usei a ferramenta consultar_agenda\"\n- Não escrever \"<function=consultar_agenda></function>\"\n- Não pedir \"informe o id\"\n- Não responder como robô técnico\n\nDados atuais do usuário:\nNome: {{$json.nome}}\nTelefone: {{$json.telefone}}\nMensagem: {{$json.mensagem}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        928,
+        32
+      ],
+      "id": "92ce190a-dd54-40ea-841d-57f50a29d1ca",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "session": "={{$json.session}}",
+        "chatId": "={{$json.chatId}}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1536,
+        -64
+      ],
+      "id": "60ebfab5-39f8-4503-bc4c-c7944328addf",
+      "name": "Start Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "BKNp1LaYpBV5cb2Y",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1888,
+        224
+      ],
+      "id": "33ae2e15-1764-478d-835d-9240ac7bacf5",
+      "name": "Wait",
+      "webhookId": "4742bd6c-9c12-477a-a2d2-11c6da5846e0"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Resposta_Final').item.json.session }}",
+        "chatId": "={{ $('Resposta_Final').item.json.chatId }}",
+        "text": "={{ $('Resposta_Final').item.json.output }}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1760,
+        -64
+      ],
+      "id": "3726ee4c-ad1d-40d6-862a-5a9e95a41301",
+      "name": "Send a text message",
+      "credentials": {
+        "wahaApi": {
+          "id": "BKNp1LaYpBV5cb2Y",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.session }} {{ $('Dados').item.json.from }} chats"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        384
+      ],
+      "id": "9482de52-6a41-4735-ba4b-6d332e254619",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DROP TABLE IF EXISTS consultas;\nDROP TABLE IF EXISTS medicos;\nDROP TABLE IF EXISTS especialidades;\n\nCREATE TABLE especialidades (\n  id SERIAL PRIMARY KEY,\n  nome VARCHAR(100)\n);\n\nCREATE TABLE medicos (\n  id SERIAL PRIMARY KEY,\n  nome VARCHAR(100),\n  especialidade_id INT REFERENCES especialidades(id)\n);\n\nCREATE TABLE consultas (\n  id SERIAL PRIMARY KEY,\n  medico_id INT REFERENCES medicos(id),\n  paciente_nome VARCHAR(100),\n  telefone VARCHAR(30),\n  data DATE,\n  hora TIME,\n  status VARCHAR(20) DEFAULT 'disponivel'\n);\n\n-- ESPECIALIDADES\nINSERT INTO especialidades (nome) VALUES\n('Clínico Geral'),\n('Periodontista'),\n('Endodontista'),\n('Ortodontista'),\n('Implantodontista');\n\n-- MÉDICOS\nINSERT INTO medicos (nome, especialidade_id) VALUES\n('Dr. João Silva', 1),\n('Dra. Maria Souza', 2),\n('Dr. Carlos Lima', 3),\n('Dra. Ana Costa', 4),\n('Dr. Pedro Rocha', 5);\n\n-- HORÁRIOS DISPONÍVEIS\nINSERT INTO consultas (medico_id, data, hora, status) VALUES\n(1, CURRENT_DATE + INTERVAL '1 day', '09:00', 'disponivel'),\n(1, CURRENT_DATE + INTERVAL '1 day', '10:00', 'disponivel'),\n(2, CURRENT_DATE + INTERVAL '1 day', '11:00', 'disponivel'),\n(3, CURRENT_DATE + INTERVAL '2 day', '14:00', 'disponivel'),\n(4, CURRENT_DATE + INTERVAL '2 day', '15:00', 'disponivel'),\n(5, CURRENT_DATE + INTERVAL '3 day', '16:00', 'disponivel');\n\n-- HORÁRIOS JÁ AGENDADOS\nINSERT INTO consultas (medico_id, paciente_nome, telefone, data, hora, status) VALUES\n(1, 'Carlos Teste', '55999999999', CURRENT_DATE, '09:00', 'agendado'),\n(2, 'Ana Teste', '55888888888', CURRENT_DATE, '10:00', 'agendado');",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1312,
+        560
+      ],
+      "id": "c9df4360-bb7b-482e-85a1-16c887655466",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "q9KQF3UbVNCY6dle",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Lista as especialidades e os dentistas da clínica. O assistente deve responder em linguagem natural e amigável, sem mencionar ferramenta ou detalhes técnicos.",
+        "operation": "executeQuery",
+        "query": "SELECT\n  e.nome AS especialidade,\n  m.nome AS medico\nFROM especialidades e\nJOIN medicos m ON m.especialidade_id = e.id\nORDER BY e.nome, m.nome;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1328,
+        384
+      ],
+      "id": "cd608fbd-111c-4cba-81e9-e36bbd051180",
+      "name": "ver_especialidades",
+      "credentials": {
+        "postgres": {
+          "id": "q9KQF3UbVNCY6dle",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Busca horários disponíveis reais no banco. Retorna uma lista ordenada com id_horario, data, hora, médico e especialidade. O assistente deve mostrar isso ao paciente como Opção 1, Opção 2, Opção 3, sem exibir o id_horario.",
+        "operation": "executeQuery",
+        "query": "SELECT\n  c.id AS id_horario,\n  TO_CHAR(c.data, 'YYYY-MM-DD') AS data,\n  TO_CHAR(c.hora, 'HH24:MI') AS hora,\n  m.nome AS medico,\n  e.nome AS especialidade\nFROM consultas c\nJOIN medicos m ON c.medico_id = m.id\nJOIN especialidades e ON m.especialidade_id = e.id\nWHERE c.status = 'disponivel'\nORDER BY c.data, c.hora\nLIMIT 20;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1152,
+        384
+      ],
+      "id": "27f68dda-646b-4726-b280-43894d2e76b6",
+      "name": "consultar_agenda",
+      "credentials": {
+        "postgres": {
+          "id": "q9KQF3UbVNCY6dle",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Confirma um agendamento usando internamente o id_horario correspondente à opção escolhida pelo paciente. Nunca mostrar o id_horario ao paciente.",
+        "operation": "executeQuery",
+        "query": "UPDATE consultas\nSET\n  paciente_nome = '{{ $('Dados').item.json.nome }}',\n  telefone = '{{ $('Dados').item.json.telefone }}',\n  status = 'agendado'\nWHERE id = {{ $fromAI('id_horario', 'ID do horário disponível escolhido pelo usuário', 'number') }}\n  AND status = 'disponivel'\nRETURNING\n  id AS id_horario,\n  TO_CHAR(data, 'YYYY-MM-DD') AS data,\n  TO_CHAR(hora, 'HH24:MI') AS hora,\n  paciente_nome,\n  telefone,\n  status;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1488,
+        384
+      ],
+      "id": "23f1e92e-e0fa-4119-aefb-6273cf1d4811",
+      "name": "criar_agendamento",
+      "credentials": {
+        "postgres": {
+          "id": "q9KQF3UbVNCY6dle",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Cancela o próximo agendamento do paciente atual com base no telefone. O assistente deve informar o cancelamento de forma humana e sem detalhes técnicos.",
+        "operation": "executeQuery",
+        "query": "WITH alvo AS (\n  SELECT id\n  FROM consultas\n  WHERE telefone = '{{ $('Dados').item.json.telefone }}'\n    AND status = 'agendado'\n  ORDER BY data, hora\n  LIMIT 1\n)\nUPDATE consultas\nSET\n  paciente_nome = NULL,\n  telefone = NULL,\n  status = 'disponivel'\nWHERE id IN (SELECT id FROM alvo)\nRETURNING\n  id AS id_horario,\n  TO_CHAR(data, 'YYYY-MM-DD') AS data,\n  TO_CHAR(hora, 'HH24:MI') AS hora,\n  status;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1152,
+        560
+      ],
+      "id": "beae7e4e-a7fa-4f52-a4d6-b78efffa67e7",
+      "name": "cancelar_agendamento",
+      "credentials": {
+        "postgres": {
+          "id": "q9KQF3UbVNCY6dle",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Reagenda a consulta do paciente para um novo horário escolhido. O assistente deve mostrar horários em formato de opções e nunca expor ids internos.",
+        "operation": "executeQuery",
+        "query": "WITH atual AS (\n  SELECT id\n  FROM consultas\n  WHERE telefone = '{{ $('Dados').item.json.telefone }}'\n    AND status = 'agendado'\n  ORDER BY data, hora\n  LIMIT 1\n),\nlibera AS (\n  UPDATE consultas\n  SET\n    paciente_nome = NULL,\n    telefone = NULL,\n    status = 'disponivel'\n  WHERE id IN (SELECT id FROM atual)\n  RETURNING id\n),\nnovo AS (\n  UPDATE consultas\n  SET\n    paciente_nome = '{{ $('Dados').item.json.nome }}',\n    telefone = '{{ $('Dados').item.json.telefone }}',\n    status = 'agendado'\n  WHERE id = {{ $fromAI('id_horario_novo', 'ID do novo horário disponível escolhido pelo usuário', 'number') }}\n    AND status = 'disponivel'\n  RETURNING id, data, hora, status\n)\nSELECT\n  id AS id_horario,\n  TO_CHAR(data, 'YYYY-MM-DD') AS data,\n  TO_CHAR(hora, 'HH24:MI') AS hora,\n  status\nFROM novo;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1504,
+        560
+      ],
+      "id": "0dc8d907-0622-43bf-9783-7f1bf4f978f4",
+      "name": "reagendar_agendament",
+      "credentials": {
+        "postgres": {
+          "id": "q9KQF3UbVNCY6dle",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d8229311-9dd9-4853-9357-ddbb13b455f7",
+              "name": "event",
+              "value": "={{ $json.body.event }}",
+              "type": "string"
+            },
+            {
+              "id": "e47b3337-c569-4468-985f-ede6fa42091b",
+              "name": "session",
+              "value": "={{ $json.body.session }}",
+              "type": "string"
+            },
+            {
+              "id": "e0f68b8c-2cbf-4897-8d8d-6f86a0c0029f",
+              "name": "message_id",
+              "value": "={{ $json.body.payload.id }}",
+              "type": "string"
+            },
+            {
+              "id": "69b59441-155f-49f0-bddb-4769af67fb60",
+              "name": "from",
+              "value": "={{ $json.body.payload.from }}",
+              "type": "string"
+            },
+            {
+              "id": "3cb4de9b-1fc3-4af8-b182-247b51eca352",
+              "name": "to",
+              "value": "={{ $json.body.payload.to }}",
+              "type": "string"
+            },
+            {
+              "id": "90741353-a3b2-4bcc-80ea-57639fec2a0e",
+              "name": "notifyName",
+              "value": "={{ $json.body.payload._data.notifyName }}",
+              "type": "string"
+            },
+            {
+              "id": "77ade37d-e6d6-4aec-8d42-603d3ceed580",
+              "name": "fromMe",
+              "value": "={{ $json.body.payload.fromMe }}",
+              "type": "boolean"
+            },
+            {
+              "id": "746c4e21-f69a-4744-9393-38fb986d9610",
+              "name": "source",
+              "value": "={{ $json.body.payload.source }}",
+              "type": "string"
+            },
+            {
+              "id": "da8b244c-9195-437d-8893-3b2ce25b9e11",
+              "name": "body",
+              "value": "={{ $json.body.payload.body }}",
+              "type": "string"
+            },
+            {
+              "id": "9752673b-868d-484f-9f5d-9b33ca0eac32",
+              "name": "hasMedia",
+              "value": "={{ $json.body.payload.hasMedia }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        304
+      ],
+      "id": "af2f13b2-e49b-4e03-aae3-e9a2cfd00277",
+      "name": "Dados1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e04bc87d-b217-457c-9d1c-80a807db6615",
+              "name": "output",
+              "value": "={{$node[\"AI Agent\"].json[\"output\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "d90b13aa-d367-4119-a0ab-d22dc91e28d5",
+              "name": "session",
+              "value": "={{$node[\"Dados\"].json[\"session\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "1f24dac6-8053-4d92-a88d-f2a0e85d27df",
+              "name": "chatId",
+              "value": "={{$node[\"Dados\"].json[\"chatId\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "000a16d3-8af6-44aa-8eb4-c8bb6f623284",
+              "name": "messageId",
+              "value": "={{$node[\"Dados\"].json[\"messageId\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "6afb22ed-bdee-4e3c-8129-306a8108163d",
+              "name": "telefone",
+              "value": "={{$node[\"Dados\"].json[\"telefone\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "f4f2e6a6-6643-4694-922e-a61305fd9c2b",
+              "name": "nome",
+              "value": "={{$node[\"Dados\"].json[\"nome\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "0a49f392-207a-413b-af81-677d2da0dcef",
+              "name": "mensagem",
+              "value": "={{$node[\"Dados\"].json[\"mensagem\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1296,
+        32
+      ],
+      "id": "60503986-09d9-4bdf-8c38-ba4f7c1dfda2",
+      "name": "Resposta_Final"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Seen",
+        "chatId": "={{$json.chatId}}",
+        "messageId": "={{$json.messageId}}",
+        "participant": "",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1536,
+        144
+      ],
+      "id": "e8ee3fb7-f199-4e77-b354-3f1e9b791b62",
+      "name": "Send Seen",
+      "credentials": {
+        "wahaApi": {
+          "id": "BKNp1LaYpBV5cb2Y",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        928,
+        240
+      ],
+      "id": "90ef1eea-9d17-46e0-a4e3-a37cee6c3cc1",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "lxFZ17ncQARohnMQ",
+          "name": "Groq account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "user-agent": "WAHA/2026.3.4",
+            "x-webhook-request-id": "25p899416mngd7hk0",
+            "x-webhook-timestamp": "1775067247007",
+            "content-length": "3318",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "host.docker.internal:5678",
+            "connection": "keep-alive"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "id": "evt_01kn541ccy0j8ahsgy7gtq522c",
+            "timestamp": 1775067247007,
+            "event": "message.any",
+            "session": "default",
+            "me": {
+              "id": "5511994279745@c.us",
+              "pushName": "RelembreMim"
+            },
+            "payload": {
+              "id": "false_558792108321@c.us_3A144B51A00BD2F9E7D1",
+              "timestamp": 1775067246,
+              "from": "558792108321@c.us",
+              "fromMe": false,
+              "source": "app",
+              "to": "5511994279745@c.us",
+              "body": "Oi",
+              "hasMedia": false,
+              "media": null,
+              "ack": 1,
+              "ackName": "SERVER",
+              "location": null,
+              "vCards": [],
+              "_data": {
+                "id": {
+                  "fromMe": false,
+                  "remote": "558792108321@c.us",
+                  "id": "3A144B51A00BD2F9E7D1",
+                  "_serialized": "false_558792108321@c.us_3A144B51A00BD2F9E7D1"
+                },
+                "viewed": false,
+                "body": "Oi",
+                "type": "chat",
+                "t": 1775067246,
+                "clientReceivedTsMillis": 1775067246868,
+                "notifyName": "João",
+                "from": "558792108321@c.us",
+                "to": "5511994279745@c.us",
+                "ack": 1,
+                "invis": false,
+                "isNewMsg": true,
+                "star": false,
+                "kicNotified": false,
+                "recvFresh": true,
+                "isFromTemplate": false,
+                "isAdsMedia": false,
+                "pollInvalidated": false,
+                "isSentCagPollCreation": false,
+                "latestEditMsgKey": null,
+                "latestEditSenderTimestampMs": null,
+                "mentionedJidList": [],
+                "groupMentions": [],
+                "isEventCanceled": false,
+                "eventInvalidated": false,
+                "isVcardOverMmsDocument": false,
+                "isForwarded": false,
+                "isQuestion": false,
+                "questionReplyQuotedMessage": null,
+                "questionResponsesCount": 0,
+                "readQuestionResponsesCount": 0,
+                "forwardsCount": 0,
+                "hasReaction": false,
+                "newsletterAdminProfile": null,
+                "viewMode": "VISIBLE",
+                "messageSecret": {
+                  "0": 84,
+                  "1": 47,
+                  "2": 99,
+                  "3": 98,
+                  "4": 57,
+                  "5": 138,
+                  "6": 191,
+                  "7": 33,
+                  "8": 85,
+                  "9": 68,
+                  "10": 60,
+                  "11": 191,
+                  "12": 180,
+                  "13": 55,
+                  "14": 126,
+                  "15": 59,
+                  "16": 18,
+                  "17": 228,
+                  "18": 226,
+                  "19": 254,
+                  "20": 222,
+                  "21": 230,
+                  "22": 5,
+                  "23": 126,
+                  "24": 131,
+                  "25": 30,
+                  "26": 163,
+                  "27": 32,
+                  "28": 176,
+                  "29": 112,
+                  "30": 178,
+                  "31": 118
+                },
+                "productHeaderImageRejected": false,
+                "lastPlaybackProgress": 0,
+                "isDynamicReplyButtonsMsg": false,
+                "isCarouselCard": false,
+                "parentMsgId": null,
+                "callSilenceReason": null,
+                "isVideoCall": false,
+                "callDuration": null,
+                "callCreator": null,
+                "callParticipants": null,
+                "isCallLink": null,
+                "callLinkToken": null,
+                "terminatedByDeviceSwitch": null,
+                "selfOtherDeviceConnected": null,
+                "isMdHistoryMsg": false,
+                "stickerSentTs": 0,
+                "isAvatar": false,
+                "lastUpdateFromServerTs": 0,
+                "invokedBotWid": null,
+                "bizBotType": null,
+                "botResponseTargetId": null,
+                "botPluginType": null,
+                "botPluginReferenceIndex": null,
+                "botPluginSearchProvider": null,
+                "botPluginSearchUrl": null,
+                "botPluginSearchQuery": null,
+                "botPluginMaybeParent": false,
+                "botReelPluginThumbnailCdnUrl": null,
+                "botMessageDisclaimerText": null,
+                "botSessionTransparencyType": null,
+                "botMsgBodyType": null,
+                "botModeSelection": null,
+                "botModeOverride": null,
+                "reportingTokenInfo": {
+                  "stanzaTs": 1775067246,
+                  "reportingToken": {
+                    "0": 160,
+                    "1": 184,
+                    "2": 174,
+                    "3": 151,
+                    "4": 236,
+                    "5": 212,
+                    "6": 67,
+                    "7": 13,
+                    "8": 172,
+                    "9": 205,
+                    "10": 54,
+                    "11": 211,
+                    "12": 6,
+                    "13": 16,
+                    "14": 144,
+                    "15": 136
+                  },
+                  "version": 2,
+                  "reportingTag": {
+                    "0": 1,
+                    "1": 17,
+                    "2": 132,
+                    "3": 7,
+                    "4": 61,
+                    "5": 130,
+                    "6": 18,
+                    "7": 242,
+                    "8": 148,
+                    "9": 110,
+                    "10": 252,
+                    "11": 23,
+                    "12": 80,
+                    "13": 123,
+                    "14": 76,
+                    "15": 90,
+                    "16": 118,
+                    "17": 146,
+                    "18": 23,
+                    "19": 34
+                  }
+                },
+                "requiresDirectConnection": null,
+                "bizContentPlaceholderType": null,
+                "hostedBizEncStateMismatch": false,
+                "senderOrRecipientAccountTypeHosted": false,
+                "placeholderCreatedWhenAccountIsHosted": false,
+                "groupHistoryBundleMessageKey": null,
+                "groupHistoryBundleMetadata": null,
+                "groupHistoryIndividualMessageInfo": null,
+                "nonJidMentions": null,
+                "links": []
+              }
+            },
+            "engine": "WEBJS",
+            "environment": {
+              "version": "2026.3.4",
+              "engine": "WEBJS",
+              "tier": "CORE",
+              "browser": "/usr/bin/chromium",
+              "platform": "linux/x64",
+              "worker": {
+                "id": null
+              }
+            }
+          },
+          "webhookUrl": "http://localhost:5678/webhook/webhook",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Dados1": [
+      {
+        "json": {
+          "event": "message.any",
+          "session": "default",
+          "message_id": "false_558792108321@c.us_3A144B51A00BD2F9E7D1",
+          "from": "558792108321@c.us",
+          "to": "5511994279745@c.us",
+          "notifyName": "João",
+          "fromMe": false,
+          "source": "app",
+          "body": "Oi",
+          "hasMedia": false
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados": {
+      "main": [
+        [
+          {
+            "node": "api?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "api?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "grupos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "grupos": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Resposta_Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Typing": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        []
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ver_especialidades": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_agenda": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "criar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cancelar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reagendar_agendament": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta_Final": {
+      "main": [
+        [
+          {
+            "node": "Send Seen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Start Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Seen": {
+      "main": [
+        []
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e0139064-0776-4efb-a914-938ecb8f0bc3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9bc8d4729c2452517b979416b87ef83c97732c3e73006dc6e4444fc29a4be1c9"
+  },
+  "id": "TGIUpAnp8w9qwSxL",
+  "tags": []
+}
