@@ -1,0 +1,65 @@
+
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-clinica
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: senha_forte
+      POSTGRES_DB: clinica_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6-alpine
+    container_name: redis-n8n
+    ports:
+      - "6379:6379"
+
+  waha:
+    image: devlikeapro/waha:latest
+    platform: linux/amd64
+    container_name: waha-api
+    environment:
+      WHATSAPP_HOOK_URL: http://host.docker.internal:5678/webhook/webhook
+      WHATSAPP_DEFAULT_ENGINE: WEBJS
+      WHATSAPP_HOOK_EVENTS: message.any
+      WAHA_NO_API_KEY: "true"
+      WAHA_DASHBOARD_NO_PASSWORD: "true"
+      WHATSAPP_SWAGGER_NO_PASSWORD: "true"
+    volumes:
+      - waha_sessions:/app/.sessions
+      - waha_media:/app/.media
+    ports:
+      - "3000:3000"
+    depends_on:
+      - n8n
+
+  n8n:
+    image: n8nio/n8n:latest
+    platform: linux/amd64
+    container_name: n8n-app
+    environment:
+      - WEBHOOK_URL=http://localhost:5678
+      - N8N_HOST=localhost:5678
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - N8N_LOG_LEVEL=debug
+      - N8N_SECURE_COOKIE=false
+      - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+      - QUEUE_BULLMQ_REDIS_HOST=redis
+    volumes:
+      - n8n_data:/home/node/.n8n
+    ports:
+      - "5678:5678"
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  waha_sessions:
+  waha_media:
+  n8n_data:
+  postgres_data:
